@@ -1,0 +1,5 @@
+.venv/
+work/
+test/
+recordings/
+__pycache__/

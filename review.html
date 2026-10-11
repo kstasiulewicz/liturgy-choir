@@ -1,0 +1,62 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Boundary Review</title>
+<style>
+  body { font: 14px system-ui, sans-serif; margin: 0; padding: 20px 24px 120px; background: #f6f4ef; color: #222; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .hint { color: #666; margin: 0 0 16px; }
+  table { border-collapse: collapse; width: 100%; background: #fff; }
+  th, td { padding: 6px 8px; border-bottom: 1px solid #e6e2d8; text-align: left; vertical-align: top; }
+  th { font-weight: 600; font-size: 12px; color: #666; }
+  tr.cur { background: #fff6dc; }
+  tr.low td:first-child { border-left: 3px solid #c0392b; }
+  input[type=text] { width: 100%; font: inherit; border: 1px solid #ddd; padding: 3px 5px; }
+  .t { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .t input { width: 70px; font: inherit; text-align: right; }
+  button { font: inherit; padding: 2px 7px; margin: 1px; cursor: pointer; border: 1px solid #ccc; background: #fafafa; border-radius: 3px; }
+  button.primary { background: #3d5a80; color: #fff; border-color: #3d5a80; }
+  .txt { color: #777; font-size: 12px; max-width: 360px; }
+  #bar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #ccc; padding: 10px 24px; display: flex; gap: 12px; align-items: center; }
+  #bar audio { flex: 1; }
+</style>
+<h1>Boundary review</h1>
+<p class="hint">Click ▶ start / ▶ end to hear each edge. Nudge with ±1s / ±0.25s, or "set" to the current playhead. Rows with a red edge were weak matches — check those first. Save when done, then run <code>process.py slice</code>.</p>
+<table><thead><tr><th>#</th><th>Name</th><th>Start</th><th></th><th>End</th><th></th><th>Heard</th><th></th></tr></thead><tbody id="rows"></tbody></table>
+<div id="bar"><audio id="a" src="/audio" controls preload="auto"></audio><span id="status"></span><button class="primary" id="save">Save cuts</button></div>
+<script>
+const a = document.getElementById('a'), rows = document.getElementById('rows');
+let cuts = [], stopAt = null;
+const fmt = s => { s = Math.max(0, s); const m = Math.floor(s / 60); return m + ':' + (s % 60).toFixed(2).padStart(5, '0'); };
+const parse = v => { const [m, s] = v.includes(':') ? v.split(':') : ['0', v]; return +m * 60 + +s; };
+a.addEventListener('timeupdate', () => { if (stopAt !== null && a.currentTime >= stopAt) { a.pause(); stopAt = null; } });
+function play(from, len) { a.currentTime = Math.max(0, from); stopAt = len ? from + len : null; a.play(); }
+function render() {
+  rows.innerHTML = '';
+  cuts.forEach((c, i) => {
+    const tr = document.createElement('tr');
+    if (c.score < 85) tr.className = 'low';
+    tr.innerHTML = `<td>${i + 1}</td>
+      <td><input type=text value="${c.name.replace(/"/g, '&quot;')}" data-k=name></td>
+      <td class=t><input value="${fmt(c.start)}" data-k=start></td>
+      <td class=t><button data-a=ps>▶ start</button><button data-n=start:-1>-1</button><button data-n=start:-0.25>-¼</button><button data-n=start:0.25>+¼</button><button data-n=start:1>+1</button><button data-a=ss>set</button></td>
+      <td class=t><input value="${fmt(c.end)}" data-k=end></td>
+      <td class=t><button data-a=pe>▶ end</button><button data-n=end:-1>-1</button><button data-n=end:-0.25>-¼</button><button data-n=end:0.25>+¼</button><button data-n=end:1>+1</button><button data-a=se>set</button></td>
+      <td class=txt>${c.text.slice(0, 140)}…</td>
+      <td><button data-a=del title="drop this clip">✕</button></td>`;
+    tr.addEventListener('input', e => { const k = e.target.dataset.k; c[k] = k === 'name' ? e.target.value : parse(e.target.value); });
+    tr.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      document.querySelectorAll('tr.cur').forEach(r => r.classList.remove('cur')); tr.classList.add('cur');
+      if (b.dataset.n) { const [k, d] = b.dataset.n.split(':'); c[k] = Math.max(0, c[k] + +d); render(); return play(k === 'start' ? c.start : c.end - 4, 5); }
+      ({ ps: () => play(c.start, 6), pe: () => play(c.end - 5, 6), ss: () => { c.start = a.currentTime; render(); },
+         se: () => { c.end = a.currentTime; render(); }, del: () => { cuts.splice(i, 1); render(); } })[b.dataset.a]();
+    });
+    rows.appendChild(tr);
+  });
+}
+document.getElementById('save').onclick = async () => {
+  await fetch('/cuts', { method: 'POST', body: JSON.stringify(cuts, null, 1) });
+  document.getElementById('status').textContent = 'Saved ' + new Date().toLocaleTimeString();
+};
+fetch('/cuts').then(r => r.json()).then(j => { cuts = j; render(); });
+</script>

@@ -1,0 +1,51 @@
+{
+  "title": "Divine Liturgy of St. John Chrysostom",
+  "note": "Choir parts in service order. 'cues' are opening words used to locate each part in the transcript (fuzzy-matched, in order). 'variable' parts change with the Sunday tone or feast.",
+  "sections": [
+    {"group": "Liturgy of the Catechumens", "parts": [
+      {"id": "great-litany", "name": "Great Litany", "cues": ["amen lord have mercy", "in peace let us pray to the lord", "to you o lord"]},
+      {"id": "antiphon-1", "name": "First Antiphon", "cues": ["through the prayers of the theotokos", "bless the lord o my soul", "it is good to give thanks"]},
+      {"id": "little-litany-1", "name": "Little Litany (1)", "cues": ["again and again in peace", "to you o lord"]},
+      {"id": "antiphon-2", "name": "Second Antiphon", "cues": ["save us o son of god", "praise the lord o my soul", "glory to the father and to the son"]},
+      {"id": "only-begotten", "name": "Only-Begotten Son", "cues": ["only begotten son and word of god"]},
+      {"id": "little-litany-2", "name": "Little Litany (2)", "cues": ["again and again in peace"]},
+      {"id": "antiphon-3", "name": "Third Antiphon / Beatitudes", "cues": ["in your kingdom remember us", "blessed are the poor in spirit", "the lord reigns", "come let us rejoice"]},
+      {"id": "entrance", "name": "Little Entrance — Come, Let Us Worship", "cues": ["come let us worship and bow down before christ", "come let us worship"]},
+      {"id": "troparia", "name": "Troparia & Kontakia", "variable": true, "cues": ["when you descended to death", "when the stone had been sealed", "you descended from on high", "the noble joseph", "now and ever and forever", "glory to the father"]},
+      {"id": "trisagion", "name": "Trisagion — Holy God", "cues": ["holy god holy and mighty holy and immortal", "holy god holy and mighty"]},
+      {"id": "prokeimenon", "name": "Prokeimenon", "variable": true, "cues": ["prokeimenon", "the lord shall reign forever", "let us be attentive", "wisdom"]},
+      {"id": "epistle", "name": "Epistle (response)", "cues": ["and with your spirit", "peace be to you reader"]},
+      {"id": "alleluia", "name": "Alleluia", "variable": true, "cues": ["alleluia alleluia alleluia"]},
+      {"id": "gospel", "name": "Gospel Responses", "cues": ["glory to you o lord glory to you", "glory to you o lord"]},
+      {"id": "litany-fervent", "name": "Litany of Fervent Supplication", "cues": ["let us all say with our whole soul", "lord have mercy lord have mercy lord have mercy"]},
+      {"id": "litany-departed", "name": "Litany for the Departed", "cues": ["have mercy on us o god", "memory eternal", "eternal memory"]},
+      {"id": "litany-catechumens", "name": "Litany for the Catechumens", "cues": ["pray to the lord you catechumens", "catechumens"]}
+    ]},
+    {"group": "Liturgy of the Faithful", "parts": [
+      {"id": "litany-faithful", "name": "Litanies of the Faithful", "cues": ["all the faithful", "again and again in peace let us pray"]},
+      {"id": "cherubic-1", "name": "Cherubic Hymn (part 1)", "cues": ["let us who mystically represent the cherubim", "who mystically represent the cherubim", "lay aside all earthly cares"]},
+      {"id": "great-entrance", "name": "Great Entrance commemorations", "cues": ["may the lord god remember", "in his kingdom"]},
+      {"id": "cherubic-2", "name": "Cherubic Hymn (part 2) — That We May Receive", "cues": ["that we may receive the king of all", "invisibly escorted by the angelic hosts"]},
+      {"id": "litany-supplication", "name": "Litany of Supplication", "cues": ["let us complete our prayer to the lord", "grant it o lord"]},
+      {"id": "father-son-spirit", "name": "Father, Son, and Holy Spirit", "cues": ["the father and the son and the holy spirit", "the trinity one in essence and undivided", "i will love you o lord my strength"]},
+      {"id": "creed", "name": "Symbol of Faith (Creed)", "cues": ["i believe in one god the father almighty", "i believe in one god"]},
+      {"id": "mercy-of-peace", "name": "A Mercy of Peace", "cues": ["a mercy of peace a sacrifice of praise", "a mercy of peace"]},
+      {"id": "anaphora-dialogue", "name": "Anaphora dialogue — It Is Proper and Just", "cues": ["we have lifted them up to the lord", "it is proper and just"]},
+      {"id": "holy-holy", "name": "Holy, Holy, Holy (Sanctus)", "cues": ["holy holy holy lord of hosts", "hosanna in the highest"]},
+      {"id": "we-praise-you", "name": "We Praise You", "cues": ["we praise you we bless you we thank you", "we praise you"]},
+      {"id": "hymn-theotokos", "name": "Hymn to the Theotokos — It Is Truly Proper", "variable": true, "cues": ["it is truly proper to glorify you", "the angel cried", "more honorable than the cherubim"]},
+      {"id": "and-all-mankind", "name": "And for All Mankind", "cues": ["and for all and for everything", "and for all mankind"]},
+      {"id": "litany-pre-communion", "name": "Litany before the Lord's Prayer", "cues": ["having commemorated all the saints", "grant it o lord"]},
+      {"id": "our-father", "name": "Our Father", "cues": ["our father who art in heaven", "our father who are in heaven"]},
+      {"id": "one-is-holy", "name": "One Is Holy", "cues": ["one is holy one is lord jesus christ", "one is holy"]},
+      {"id": "communion-hymn", "name": "Communion Hymn", "variable": true, "cues": ["praise the lord from the heavens", "alleluia alleluia alleluia"]},
+      {"id": "receive-body", "name": "Receive the Body of Christ", "cues": ["receive the body of christ", "taste the fountain of immortality"]},
+      {"id": "we-have-seen", "name": "We Have Seen the True Light", "cues": ["we have seen the true light", "blessed is he who comes in the name of the lord"]},
+      {"id": "may-our-mouths", "name": "May Our Mouths Be Filled", "cues": ["may our mouths be filled with your praise"]},
+      {"id": "thanksgiving-litany", "name": "Litany of Thanksgiving", "cues": ["having received the divine holy", "stand upright"]},
+      {"id": "blessed-be-name", "name": "Blessed Be the Name of the Lord", "cues": ["blessed be the name of the lord now and forever", "blessed be the name of the lord"]},
+      {"id": "dismissal", "name": "Dismissal", "cues": ["glory to the father and to the son", "give the blessing", "lord have mercy lord have mercy lord have mercy"]},
+      {"id": "many-years", "name": "Many Years / God Grant", "cues": ["god grant", "many years", "many blessed years"]}
+    ]}
+  ]
+}

@@ -1,6 +1,6 @@
 {
  "title": "Divine Liturgy",
- "subtitle": "Choir practice recordings",
+ "subtitle": "Choir practice recordings — save test",
  "recordings": [
   {
    "id": "test",
@@ -67,19 +67,19 @@
    "variable": false,
    "notes": "",
    "file": "audio/test/05-only-begotten.mp3",
-   "duration": 8.0
+   "duration": 8
   },
   {
    "id": "test/entrance",
    "part": "entrance",
    "recording": "test",
-   "name": "Little Entrance \u2014 Come, Let Us Worship",
+   "name": "Little Entrance — Come, Let Us Worship",
    "group": "Liturgy of the Catechumens",
    "tone": null,
    "variable": false,
    "notes": "",
    "file": "audio/test/06-entrance.mp3",
-   "duration": 10.0
+   "duration": 10
   },
   {
    "id": "test/troparia",
@@ -97,7 +97,7 @@
    "id": "test/trisagion",
    "part": "trisagion",
    "recording": "test",
-   "name": "Trisagion \u2014 Holy God",
+   "name": "Trisagion — Holy God",
    "group": "Liturgy of the Catechumens",
    "tone": null,
    "variable": false,
@@ -127,7 +127,7 @@
    "variable": false,
    "notes": "",
    "file": "audio/test/10-gospel.mp3",
-   "duration": 9.0
+   "duration": 9
   },
   {
    "id": "test/litany-fervent",
@@ -157,7 +157,7 @@
    "id": "test/cherubic-2",
    "part": "cherubic-2",
    "recording": "test",
-   "name": "Cherubic Hymn (part 2) \u2014 That We May Receive",
+   "name": "Cherubic Hymn (part 2) — That We May Receive",
    "group": "Liturgy of the Faithful",
    "tone": null,
    "variable": false,
@@ -193,7 +193,7 @@
    "id": "test/anaphora-dialogue",
    "part": "anaphora-dialogue",
    "recording": "test",
-   "name": "Anaphora dialogue \u2014 It Is Proper and Just",
+   "name": "Anaphora dialogue — It Is Proper and Just",
    "group": "Liturgy of the Faithful",
    "tone": null,
    "variable": false,
@@ -229,7 +229,7 @@
    "id": "test/hymn-theotokos",
    "part": "hymn-theotokos",
    "recording": "test",
-   "name": "Hymn to the Theotokos \u2014 It Is Truly Proper",
+   "name": "Hymn to the Theotokos — It Is Truly Proper",
    "group": "Liturgy of the Faithful",
    "tone": null,
    "variable": true,
@@ -271,7 +271,7 @@
    "variable": true,
    "notes": "",
    "file": "audio/test/22-communion-hymn.mp3",
-   "duration": 9.0
+   "duration": 9
   },
   {
    "id": "test/we-have-seen",

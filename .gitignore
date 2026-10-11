@@ -1,5 +1,5 @@
-.venv/
-work/
-test/
-recordings/
+/.venv/
+/work/
+/test/
+/recordings/
 __pycache__/

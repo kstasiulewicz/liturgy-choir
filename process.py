@@ -18,7 +18,7 @@ from pathlib import Path
 from rapidfuzz import fuzz
 
 ROOT = Path(__file__).parent
-SITE = ROOT / "site"
+SITE = ROOT / "docs"
 SNAP_WINDOW = 8.0      # seconds to search for a pause near a cue
 MIN_SCORE = 78         # fuzzy cue match threshold (0-100)
 

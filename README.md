@@ -20,4 +20,4 @@ Re-slicing a recording keeps any names, tones and notes edited on the site.
 - `liturgy.json` — service order and the opening words used to find each part. Add cues here if a part isn't found.
 - `process.py` — transcribe (faster-whisper) → align (fuzzy cue match + global ordering + pause snapping) → slice (ffmpeg, loudness-normalized mono MP3).
 - `review.py` / `review.html` — local boundary review tool.
-- `site/` — the published page. `site/clips.json` holds all names/tones/notes; the page's **Edit** button saves to it through the GitHub API using an editor key (fine-grained token with Contents read/write on this repo only).
+- `docs/` — the published page. `docs/clips.json` holds all names/tones/notes; the page's **Edit** button saves to it through the GitHub API using an editor key (fine-grained token with Contents read/write on this repo only).

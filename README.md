@@ -4,20 +4,19 @@ Slices a recorded Divine Liturgy into one clip per sung part and publishes a pho
 
 ## Adding a recording
 
-1. Copy the recording (wav/mp3/m4a/flac) into `recordings/`.
-2. Transcribe (~10–20 min for a 90-min liturgy on this laptop, CPU only):
-   `.venv/Scripts/python process.py transcribe recordings/<file>`
-3. Locate the parts: `.venv/Scripts/python process.py align recordings/<file>`
-4. Check every boundary by ear: `.venv/Scripts/python review.py recordings/<file>` → http://localhost:7788
-   (red-edged rows were weaker matches; nudge, rename, or drop clips, then **Save cuts**)
-5. Cut the clips: `.venv/Scripts/python process.py slice recordings/<file> --date 2026-10-18 --tone 5`
-6. Commit and push; GitHub Pages republishes in about a minute.
+1. Join the Zoom H1e's split WAVs for one date into `recordings/<YYYY-MM-DD>.flac` (it splits at 2 GB).
+2. `.venv/Scripts/python process.py transcribe recordings/<date>.flac --model small.en` (~20 min per service)
+3. `.venv/Scripts/python process.py align recordings/<date>.flac` — check `work/<date>/cuts.json`; add cues to `liturgy.json` if a part is missed.
+4. `.venv/Scripts/python process.py export recordings/<date>.flac --date <date> --clean b` — renders `docs/audio/<date>.mp3` (stops at service end) and adds the parts as a Draft Sunday.
+5. Commit and push. Boundaries, names, tones and the Draft flag are then fixed on the live site (Edit).
 
-Re-slicing a recording keeps any names, tones and notes edited on the site.
+Changing the cleanup level later: re-run step 4 with another `--clean`; parts and labels edited on the site are kept.
+`audition.py` rebuilds the A–D comparison at `docs/cleanup/`.
 
 ## Files
 
 - `liturgy.json` — service order and the opening words used to find each part. Add cues here if a part isn't found.
 - `process.py` — transcribe (faster-whisper) → align (fuzzy cue match + global ordering + pause snapping) → slice (ffmpeg, loudness-normalized mono MP3).
-- `review.py` / `review.html` — local boundary review tool.
+- `review.py` / `review.html` — older local boundary tool (superseded by Edit mode on the site).
+- `audition.py` / `audition.html` — cleanup comparison page generator.
 - `docs/` — the published page. `docs/clips.json` holds all names/tones/notes; the page's **Edit** button saves to it through the GitHub API using an editor key (fine-grained token with Contents read/write on this repo only).

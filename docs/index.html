@@ -171,9 +171,9 @@
 
 <dialog id="tokenDlg">
   <form method="dialog">
-    <strong>Editor key</strong>
-    <p>Saving needs the choir's GitHub editor key. Paste it once — this browser will remember it. Ask the choir director if you don't have it.</p>
-    <input id="tokenIn" type="password" placeholder="github_pat_…" autocomplete="off">
+    <strong>Editor passcode</strong>
+    <p>Enter the choir's editor passcode. This device will remember it. Ask Kamil or the choir director if you don't have it.</p>
+    <input id="tokenIn" type="password" placeholder="Passcode" autocomplete="current-password">
     <div class="row"><button class="btn" value="cancel">Cancel</button><button class="btn primary" value="ok">Continue</button></div>
   </form>
 </dialog>
@@ -359,10 +359,27 @@ function setEditing(on) {
 }
 $("editBtn").onclick = $("editBtn2").onclick = () => setEditing(true);
 $("cancelEdit").onclick = () => setEditing(false);
+// The GitHub token is published only encrypted (editor.json, written by set_passcode.py);
+// the passcode unlocks it in the browser: PBKDF2-SHA256 -> AES-256-GCM.
+async function unlock(passcode) {
+  const box = await (await fetch("editor.json?" + Date.now())).json();
+  const raw = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(passcode), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey({ name: "PBKDF2", hash: "SHA-256", salt: raw(box.salt), iterations: box.iter },
+    base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+  try { return new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: raw(box.iv) }, key, raw(box.ct))); }
+  catch { return null; } // wrong passcode
+}
 function getToken() {
   const saved = store.get("ghToken"); if (saved) return Promise.resolve(saved);
   return new Promise(res => { const d = $("tokenDlg"); $("tokenIn").value = ""; d.showModal();
-    d.onclose = () => { const v = $("tokenIn").value.trim(); if (d.returnValue === "ok" && v) { store.set("ghToken", v); res(v); } else res(null); }; });
+    d.onclose = async () => {
+      const v = $("tokenIn").value; if (d.returnValue !== "ok" || !v) return res(null);
+      toast("Checking passcode…");
+      const t = await unlock(v).catch(() => null);
+      if (!t) { toast("That passcode didn't work."); return res(null); }
+      store.set("ghToken", t); res(t);
+    }; });
 }
 $("saveEdit").onclick = async () => {
   const token = await getToken(); if (!token) return;
@@ -371,7 +388,7 @@ $("saveEdit").onclick = async () => {
   $("saveEdit").disabled = true;
   try {
     const cur = await fetch(url + "?ref=" + REPO.branch, { headers: h });
-    if (cur.status === 401 || cur.status === 403) { store.del("ghToken"); throw new Error("That editor key didn't work."); }
+    if (cur.status === 401 || cur.status === 403) { store.del("ghToken"); throw new Error("The saved passcode no longer works — tap Save again and re-enter it."); }
     const { sha } = await cur.json();
     const body = new TextEncoder().encode(JSON.stringify(draft, null, 1) + "\n");
     const b64 = btoa(Array.from(body, b => String.fromCharCode(b)).join(""));

@@ -203,6 +203,15 @@ def align(audio):
     if ov.exists():
         for pid, t in json.loads(ov.read_text(encoding="utf-8")).items():
             k = next((k for k, c in enumerate(cuts) if c["id"] == pid), None)
+            if k is None:  # part the matcher missed entirely: insert it at t
+                part = next(q for q in parts if q["id"] == pid)
+                nxt = next((c["start"] for c in cuts if c["start"] > t), tr["duration"])
+                cuts.append({"id": pid, "name": part["name"], "group": part["group"],
+                             "variable": part.get("variable", False), "spoken": part.get("spoken", False),
+                             "start": t, "end": nxt, "score": 0, "text": ""})
+                cuts.sort(key=lambda c: c["start"])
+                print(f"  override: added {pid} at {t / 60:.2f} min")
+                continue
             if k is not None:
                 cuts[k]["start"] = t
                 if k:

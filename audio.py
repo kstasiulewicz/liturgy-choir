@@ -259,6 +259,9 @@ def repair_chain(qc):
                 f.append(f"bandreject=f={k * f0:.2f}:width_type=h:w={spread * k:.2f}")
     if qc.get("clicks", 0) > 10:
         f.insert(0, "adeclick=w=55:o=75")
+    if qc.get("clipping_events", 0) > 20:
+        # Audacity "Clip Fix": rebuild flattened peaks before anything else touches them
+        f.insert(0, "adeclip=w=55:o=75")
     return f
 
 

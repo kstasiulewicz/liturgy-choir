@@ -74,7 +74,7 @@
   .tag.spk { border-color: var(--line); color: var(--muted); }
   .tag.draft { border-color: var(--accent); color: var(--accent); text-transform: uppercase; letter-spacing: .08em; font-size: 11px; }
   .bounds { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: 12px; color: var(--muted); }
-  .bounds b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; min-width: 52px; display: inline-block; }
+  .bounds input.tm { width: 74px !important; font-weight: 600; font-variant-numeric: tabular-nums; padding: 3px 5px !important; }
   .bounds button { border: 1px solid var(--line); background: var(--card); padding: 3px 7px; font-size: 12px; cursor: pointer; }
   .bounds .grp { display: flex; gap: 3px; align-items: center; margin-right: 10px; }
   .foot { text-align: center; color: var(--muted); font-size: 13px; margin: 28px 0 0; }
@@ -263,8 +263,8 @@ function renderDay(r) {
         <div class="row2"><input data-i="${i}" data-k="name" value="${esc(c.name)}" aria-label="Name">
         <select data-i="${i}" data-k="tone" aria-label="Tone">${toneOpts(c.tone)}</select></div>
         <textarea data-i="${i}" data-k="notes" rows="2" placeholder="Notes for the choir (who leads, tricky spots…)">${esc(c.notes)}</textarea>
-        <div class="bounds">${["start", "end"].map(k => `<span class="grp">${k === "start" ? "Starts" : "Ends"} <b>${fmtP(c[k])}</b>
-          <button data-b="${i}:${k}:-1">−1s</button><button data-b="${i}:${k}:-0.25">−¼</button><button data-b="${i}:${k}:0.25">+¼</button><button data-b="${i}:${k}:1">+1s</button>
+        <div class="bounds">${["start", "end"].map(k => `<span class="grp">${k === "start" ? "Starts" : "Ends"} <input class="tm" data-t="${i}:${k}" value="${fmtP(c[k])}" inputmode="decimal" aria-label="${k} time (m:ss)">
+          <button data-b="${i}:${k}:-10">−10</button><button data-b="${i}:${k}:-1">−1s</button><button data-b="${i}:${k}:-0.25">−¼</button><button data-b="${i}:${k}:0.25">+¼</button><button data-b="${i}:${k}:1">+1s</button><button data-b="${i}:${k}:10">+10</button>
           <button data-h="${i}:${k}">▶ hear</button></span>`).join("")}</div></div>`
       : `<div class="name">${esc(c.name)}</div>${tone || v ? `<div class="meta">${tone}${v}</div>` : ""}${c.notes ? `<div class="notes">${esc(c.notes)}</div>` : ""}`;
     html += `<div class="clip ${current?.id === c.id ? "playing" : ""} ${c.spoken ? "spoken" : ""}" data-i="${i}">
@@ -290,6 +290,16 @@ $("list").addEventListener("click", e => {
     return;
   }
   const el = e.target.closest(".clip"); if (el && !e.target.closest(".ed")) playClip(+el.dataset.i);
+});
+// Typed times: "6:15", "6:15.5", "375" (seconds) or "1:02:03".
+$("list").addEventListener("change", e => {
+  const t = e.target; if (!t.dataset.t) return;
+  const [i, k] = t.dataset.t.split(":"); const c = visible[+i];
+  const secs = t.value.trim().split(":").reduce((acc, v) => acc * 60 + parseFloat(v), 0);
+  if (!isFinite(secs) || secs < 0 || (k === "start" ? secs >= c.end - 1 : secs <= c.start + 1)) {
+    toast("Use m:ss, e.g. 6:15 — and keep the start before the end."); t.value = fmtP(c[k]); return;
+  }
+  c[k] = Math.round(secs * 100) / 100; renderDay(recOf(c.recording)); hear(c, k);
 });
 // Preview an edge: the first 4 s after a start, or the last 4 s before an end.
 function hear(c, k) {

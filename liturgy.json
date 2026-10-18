@@ -3,12 +3,28 @@
   "note": "Choir parts in service order. 'cues' are opening words used to locate each part in the transcript (fuzzy-matched, in order). 'variable' parts change with the Sunday tone or feast. 'spoken' parts (homily, announcements) are labelled so they can be found and removed later.",
   "sections": [
     {
+      "group": "Before the Liturgy (end of Matins)",
+      "parts": [
+        {
+          "id": "great-doxology",
+          "name": "Great Doxology & Troparion (end of Matins)",
+          "variable": true,
+          "cues": [
+            "glory to god in the highest and on earth peace good will",
+            "we praise you we bless you we worship you we glorify you",
+            "glory to god in the highest"
+          ]
+        }
+      ]
+    },
+    {
       "group": "Liturgy of the Catechumens",
       "parts": [
         {
           "id": "great-litany",
           "name": "Great Litany",
           "cues": [
+            "blessed is the kingdom",
             "amen lord have mercy",
             "in peace let us pray to the lord",
             "to you o lord"

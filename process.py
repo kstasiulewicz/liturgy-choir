@@ -166,6 +166,7 @@ def align(audio):
 
     cuts = []
     for k, f in enumerate(found):
+        p = f["part"]
         t = words[f["i"]]["s"]
         prev_t = words[found[k - 1]["i"]]["e"] if k else 0.0
         start = boundary(t, sil, prev_t)[1]
@@ -180,6 +181,11 @@ def align(audio):
                 if w2["s"] - w1["e"] > TAIL_GAP:
                     end = w1["e"]
                     break
+            # a service that closes with the Thanksgiving Prayers ends at their final "Amen"
+            if p["id"] == "thanksgiving-prayers":
+                amens = [w["e"] for w in tail if norm(w["w"])[:1] == ["amen"] and w["e"] <= end]
+                if amens:
+                    end = amens[-1]
             end = min(tr["duration"], end + 2.0)
         if k == 0 and t < 10:
             start = 0.0
@@ -191,6 +197,17 @@ def align(audio):
                      "variable": p.get("variable", False), "spoken": p.get("spoken", False),
                      "start": round(start, 2), "end": round(end, 2),
                      "score": f["score"], "text": text[:400]})
+    # hand corrections: work/<name>/overrides.json {"part-id": start_seconds} moves that part's start
+    # (and the previous part's end) when the transcript gives no usable cue
+    ov = wd / "overrides.json"
+    if ov.exists():
+        for pid, t in json.loads(ov.read_text(encoding="utf-8")).items():
+            k = next((k for k, c in enumerate(cuts) if c["id"] == pid), None)
+            if k is not None:
+                cuts[k]["start"] = t
+                if k:
+                    cuts[k - 1]["end"] = t
+                print(f"  override: {pid} starts at {t / 60:.2f} min")
     (wd / "cuts.json").write_text(json.dumps(cuts, indent=1))
     missing = [p["name"] for p in parts if p["id"] not in {c["id"] for c in cuts}]
     print(f"\n{len(cuts)} parts located, {len(missing)} not found -> {wd/'cuts.json'}")

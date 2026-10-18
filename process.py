@@ -211,12 +211,20 @@ def export(audio, date, tone=None, clean="b"):
     # stop just after the last labelled part: after-service conversation stays off the public site
     cuts = json.loads((workdir(audio) / "cuts.json").read_text(encoding="utf-8"))
     until = max(c["end"] for c in cuts) + 3
+    # cleanup chain + presets live in audio.py (measured per recording: hum, clicks, noise profile)
+    import audio as A
+    if not (workdir(audio) / "qc.json").exists():
+        A.analyze(audio)
+    wav = workdir(audio) / "clean.wav"
+    A.clean(audio, wav, clean, start=0, dur=until)
     # CBR so browsers can seek precisely to a part's start time
-    subprocess.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-t", str(until), "-i", str(audio),
-                    "-af", f"{CLEAN[clean]},{LEVEL},{LIMIT}",
+    subprocess.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", str(wav),
                     "-ac", "1", "-ar", "44100", "-c:a", "libmp3lame", "-b:a", "96k", str(out)], check=True)
+    wav.unlink()
     print(f"rendered {out} ({out.stat().st_size / 1e6:.0f} MB, cleanup {clean})")
 
+    # pick up labels/boundaries edited on the live site before touching clips.json
+    subprocess.run(["git", "-C", str(ROOT), "pull", "-q", "--rebase", "--autostash"], check=False)
     clips_path = SITE / "clips.json"
     data = json.loads(clips_path.read_text(encoding="utf-8")) if clips_path.exists() else {"recordings": [], "clips": []}
     r = next((x for x in data["recordings"] if x["id"] == rec), None)

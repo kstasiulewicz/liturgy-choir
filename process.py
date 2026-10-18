@@ -3,11 +3,11 @@
 Usage:
   python process.py transcribe <audio>      # whisper -> work/<name>/transcript.json (slow, cached)
   python process.py align <audio>           # transcript + silences -> work/<name>/cuts.json
-  python process.py slice <audio> [--date YYYY-MM-DD] [--tone N]
-                                            # cuts.json -> site/audio/*.mp3 + site/clips.json
-  python process.py all <audio> [...]       # all three
+  python process.py export <audio> --date YYYY-MM-DD [--tone N] [--clean a|b|c|d]
+                                            # cleaned full service -> docs/audio/<date>.mp3, parts -> docs/clips.json
+  python process.py all <audio> --date ...  # all three
 
-Between align and slice, run `python review.py <audio>` to fix boundaries by ear.
+Boundaries are then fine-tuned on the live site (Edit mode).
 """
 import json
 import re
@@ -21,6 +21,18 @@ ROOT = Path(__file__).parent
 SITE = ROOT / "docs"
 SNAP_WINDOW = 8.0      # seconds to search for a pause near a cue
 MIN_SCORE = 78         # fuzzy cue match threshold (0-100)
+TAIL_GAP = 45.0        # a word-free gap this long after the last part = service is over
+
+# Cleanup presets (ffmpeg filter chains), auditioned with audition.py.
+# Room noise in these recordings is mains hum (60 Hz + harmonics) and rumble below ~50 Hz.
+_HUM = "highpass=f=70:poles=2," + ",".join(f"bandreject=f={h}:width_type=q:w=30" for h in (60, 120, 180, 240, 300))
+CLEAN = {
+    "a": "anull",
+    "b": _HUM,
+    "c": _HUM + ",afftdn=nr=10:nf=-50:tn=1",
+    "d": _HUM + ",afftdn=nr=20:nf=-50:tn=1,acompressor=threshold=-26dB:ratio=2:attack=20:release=400:makeup=2",
+}
+LIMIT = "alimiter=limit=0.89:level=false"
 
 
 def workdir(audio):
@@ -40,7 +52,8 @@ def transcribe(audio, model_name="medium.en"):
     if out.exists():
         print(f"cached: {out}")
         return
-    model = WhisperModel(model_name, device="cpu", compute_type="int8")
+    import os
+    model = WhisperModel(model_name, device="cpu", compute_type="int8", cpu_threads=os.cpu_count() or 4)
     # decode with ffmpeg ourselves (16 kHz mono float) - avoids PyAV version issues
     import numpy as np
     pcm = subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-i", str(audio),
@@ -159,7 +172,15 @@ def align(audio):
         if k + 1 < len(found):
             end = boundary(words[found[k + 1]["i"]]["s"], sil, words[f["i"]]["e"])[0]
         else:
-            end = tr["duration"]
+            # last part ends at the first long silence after it, not at the end of the file
+            # (recorders keep running into after-service conversation, which stays off the site)
+            tail = [w for w in words if w["s"] >= t]
+            end = tail[-1]["e"] if tail else tr["duration"]
+            for w1, w2 in zip(tail, tail[1:]):
+                if w2["s"] - w1["e"] > TAIL_GAP:
+                    end = w1["e"]
+                    break
+            end = min(tr["duration"], end + 2.0)
         if k == 0 and t < 10:
             start = 0.0
         if cuts:
@@ -167,7 +188,7 @@ def align(audio):
         text = " ".join(w["w"] for w in words if start <= w["s"] < end)
         p = f["part"]
         cuts.append({"id": p["id"], "name": p["name"], "group": p["group"],
-                     "variable": p.get("variable", False),
+                     "variable": p.get("variable", False), "spoken": p.get("spoken", False),
                      "start": round(start, 2), "end": round(end, 2),
                      "score": f["score"], "text": text[:400]})
     (wd / "cuts.json").write_text(json.dumps(cuts, indent=1))
@@ -175,40 +196,47 @@ def align(audio):
     print(f"\n{len(cuts)} parts located, {len(missing)} not found -> {wd/'cuts.json'}")
 
 
-# ---------- slice ----------
-def slice_(audio, date=None, tone=None):
-    wd = workdir(audio)
-    cuts = json.loads((wd / "cuts.json").read_text(encoding="utf-8"))
-    rec = date or Path(audio).stem
-    adir = SITE / "audio" / rec
-    adir.mkdir(parents=True, exist_ok=True)
+# ---------- export ----------
+# Whole-service leveling: brings quiet passages up without pumping (per-part loudnorm isn't possible
+# now that parts are time ranges inside one file).
+LEVEL = "dynaudnorm=f=750:g=31:m=6:p=0.9"
+
+
+def export(audio, date, tone=None, clean="b"):
+    """Render the cleaned full service to docs/audio/<date>.mp3 and add its parts to docs/clips.json.
+    Re-running only re-renders the audio: part names/times edited on the site are kept."""
+    rec = date
+    (SITE / "audio").mkdir(parents=True, exist_ok=True)
+    out = SITE / "audio" / f"{rec}.mp3"
+    # stop just after the last labelled part: after-service conversation stays off the public site
+    cuts = json.loads((workdir(audio) / "cuts.json").read_text(encoding="utf-8"))
+    until = max(c["end"] for c in cuts) + 3
+    # CBR so browsers can seek precisely to a part's start time
+    subprocess.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-t", str(until), "-i", str(audio),
+                    "-af", f"{CLEAN[clean]},{LEVEL},{LIMIT}",
+                    "-ac", "1", "-ar", "44100", "-c:a", "libmp3lame", "-b:a", "96k", str(out)], check=True)
+    print(f"rendered {out} ({out.stat().st_size / 1e6:.0f} MB, cleanup {clean})")
+
     clips_path = SITE / "clips.json"
     data = json.loads(clips_path.read_text(encoding="utf-8")) if clips_path.exists() else {"recordings": [], "clips": []}
-    # keep any names/tones/notes the choir already edited for this recording
-    old = {c["id"]: c for c in data["clips"] if c["recording"] == rec}
-    data["clips"] = [c for c in data["clips"] if c["recording"] != rec]
-    if not any(r["id"] == rec for r in data["recordings"]):
-        data["recordings"].append({"id": rec, "label": rec, "tone": tone})
-
-    for n, c in enumerate(cuts, 1):
-        fname = f"{n:02d}-{c['id']}.mp3"
-        dur = c["end"] - c["start"]
-        subprocess.run(
-            ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
-             "-ss", str(c["start"]), "-t", str(dur), "-i", str(audio),
-             "-af", f"afade=t=in:d=0.3,afade=t=out:st={max(0, dur-0.8)}:d=0.8,loudnorm=I=-18:TP=-1.5",
-             "-ac", "1", "-b:a", "96k", str(adir / fname)], check=True)
-        prev = old.get(f"{rec}/{c['id']}", {})
-        data["clips"].append({
-            "id": f"{rec}/{c['id']}", "part": c["id"], "recording": rec,
-            "name": prev.get("name", c["name"]), "group": c["group"],
-            "tone": prev.get("tone", tone if c["variable"] else None),
-            "variable": c["variable"], "notes": prev.get("notes", ""),
-            "file": f"audio/{rec}/{fname}", "duration": round(dur, 1),
-        })
-        print(f"  {fname}  {dur:5.0f}s")
-    clips_path.write_text(json.dumps(data, indent=1))
-    print(f"wrote {len(cuts)} clips -> {adir}")
+    r = next((x for x in data["recordings"] if x["id"] == rec), None)
+    if r:
+        r["clean"] = clean
+        print("recording already on the site: kept its parts and labels")
+    else:
+        data["recordings"].append({"id": rec, "date": rec, "label": "", "tone": tone, "notes": "",
+                                   "draft": True, "clean": clean, "file": f"audio/{rec}.mp3"})
+        for c in cuts:
+            data["clips"].append({
+                "id": f"{rec}/{c['id']}", "part": c["id"], "recording": rec,
+                "name": c["name"], "group": c["group"],
+                "start": c["start"], "end": c["end"],
+                "tone": tone if c["variable"] else None, "variable": c["variable"],
+                "spoken": c.get("spoken", False), "notes": "",
+            })
+        print(f"added {len(cuts)} parts")
+    data["recordings"].sort(key=lambda x: x["id"])
+    clips_path.write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
@@ -218,5 +246,5 @@ if __name__ == "__main__":
         transcribe(audio, opts.get("--model", "medium.en"))
     if cmd in ("align", "all"):
         align(audio)
-    if cmd in ("slice", "all"):
-        slice_(audio, opts.get("--date"), opts.get("--tone"))
+    if cmd in ("export", "all"):
+        export(audio, opts["--date"], opts.get("--tone"), opts.get("--clean", "b"))

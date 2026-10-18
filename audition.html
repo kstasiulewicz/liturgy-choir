@@ -1,0 +1,64 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cleanup Audition</title>
+<style>
+  body { margin: 0; padding: 24px 16px 60px; background: #f4f2ee; color: #222; font: 15px/1.45 system-ui, sans-serif; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .hint { color: #666; margin: 0 0 20px; }
+  .ex { background: #fff; border: 1px solid #ddd8ce; padding: 14px 16px; margin: 0 0 14px; }
+  .head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .head strong { flex: 1; }
+  .head span { color: #777; font-size: 13px; }
+  button { font: inherit; border: 1px solid #c9c2b5; background: #faf8f4; padding: 8px 12px; cursor: pointer; }
+  .play { width: 84px; background: #3d4f63; color: #fff; border-color: #3d4f63; }
+  .opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 6px; }
+  .opts button.on { background: #7b2d26; border-color: #7b2d26; color: #fff; }
+  .prog { height: 4px; background: #e6e1d8; margin-top: 10px; cursor: pointer; }
+  .prog i { display: block; height: 100%; width: 0; background: #7b2d26; }
+  .pick { margin-top: 24px; background: #fff; border: 1px solid #ddd8ce; padding: 14px 16px; }
+</style>
+<div class="wrap">
+  <h1>Audio cleanup — pick a level</h1>
+  <p class="hint">Press play, then switch versions while it plays (tap, or keys 1–4). All versions are volume-matched and stay in sync, so you only hear the cleanup. Headphones or a phone speaker both worth a listen.</p>
+  <div id="list"></div>
+  <div class="pick">Pick the letter that sounds best (or "B, but less of X") and send it to Kamil. Every Sunday on the site gets re-exported with that level.</div>
+  <p class="hint" style="margin-top:16px"><a href="../">← Back to the recordings</a></p>
+</div>
+<script>
+const D = /*DATA*/;
+const keys = Object.keys(D.names);
+let active = null; // {ex, auds, sel}
+const list = document.getElementById('list');
+D.excerpts.forEach((ex, n) => {
+  const box = document.createElement('div'); box.className = 'ex';
+  box.innerHTML = `<div class="head"><button class="play">▶ Play</button><strong>${ex.label}</strong><span>at ${ex.at}</span></div>
+    <div class="opts">${keys.map((k, i) => `<button data-k="${k}" class="${i ? '' : 'on'}">${D.names[k]}</button>`).join('')}</div>
+    <div class="prog"><i></i></div>`;
+  const auds = Object.fromEntries(keys.map(k => { const a = new Audio(ex.files[k]); a.preload = 'auto'; a.muted = k !== keys[0]; return [k, a]; }));
+  const st = { box, auds, sel: keys[0] };
+  const main = () => auds[keys[0]];
+  const playBtn = box.querySelector('.play'), bar = box.querySelector('.prog i');
+  function stopAll() { Object.values(auds).forEach(a => a.pause()); playBtn.textContent = '▶ Play'; }
+  playBtn.onclick = () => {
+    if (active && active !== st) active.stop();
+    if (!main().paused) return stopAll();
+    const t = main().currentTime; Object.values(auds).forEach(a => { a.currentTime = t; a.play(); });
+    playBtn.textContent = '❚❚ Pause'; active = st;
+  };
+  st.stop = stopAll;
+  st.select = k => { st.sel = k; keys.forEach(x => auds[x].muted = x !== k);
+    box.querySelectorAll('.opts button').forEach(b => b.classList.toggle('on', b.dataset.k === k)); };
+  box.querySelector('.opts').onclick = e => { const b = e.target.closest('button'); if (b) { st.select(b.dataset.k); active = st; } };
+  main().ontimeupdate = () => {
+    bar.style.width = (main().currentTime / main().duration * 100 || 0) + '%';
+    Object.values(auds).forEach(a => { if (a !== main() && Math.abs(a.currentTime - main().currentTime) > 0.12) a.currentTime = main().currentTime; });
+  };
+  main().onended = stopAll;
+  box.querySelector('.prog').onclick = e => { const r = e.currentTarget.getBoundingClientRect();
+    const t = (e.clientX - r.left) / r.width * main().duration; Object.values(auds).forEach(a => a.currentTime = t); };
+  list.appendChild(box);
+});
+document.addEventListener('keydown', e => { const i = +e.key - 1; if (active && keys[i]) active.select(keys[i]); if (e.code === 'Space' && active) { e.preventDefault(); active.box.querySelector('.play').click(); } });
+</script>

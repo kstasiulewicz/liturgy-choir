@@ -8,106 +8,155 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f7f3ec; --card: #fffdf9; --ink: #2a2420; --muted: #7a6f66; --line: #e7dfd3;
-    --accent: #7b2d26; --accent-soft: #f3e4e1; --gold: #a8833a; --gold-soft: #f6eedc;
+    --bg: #f5f2ec; --card: #fffdf9; --ink: #26211d; --muted: #766b62; --line: #e2d9cc;
+    --accent: #6f2a24; --accent-soft: #f1e3df; --gold: #94742f; --gold-soft: #f3ecdc;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #1b1816; --card: #24201d; --ink: #eee6dc; --muted: #a39789; --line: #383029;
-            --accent: #d98a7f; --accent-soft: #3a2623; --gold: #d5b06a; --gold-soft: #3a3122; color-scheme: dark; }
+    :root { --bg: #1a1715; --card: #221e1b; --ink: #ece4da; --muted: #a09486; --line: #37302a;
+            --accent: #d38b80; --accent-soft: #382522; --gold: #cfae6c; --gold-soft: #363022; color-scheme: dark; }
   }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; border-radius: 0; }
   [hidden] { display: none !important; }
   body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 Inter, system-ui, sans-serif;
          padding: env(safe-area-inset-top) 16px calc(150px + env(safe-area-inset-bottom)); }
   .wrap { max-width: 760px; margin: 0 auto; }
-  header { padding: 32px 0 12px; text-align: center; }
-  .cross { color: var(--gold); font-size: 22px; letter-spacing: 0; }
+  select, input, textarea, button { font: inherit; color: inherit; }
+  .serif { font-family: "Cormorant Garamond", Georgia, serif; }
+
+  /* home */
+  header.home { padding: 36px 0 16px; text-align: center; }
+  .cross { color: var(--gold); font-size: 22px; }
   h1 { font: 600 34px/1.1 "Cormorant Garamond", Georgia, serif; margin: 6px 0 4px; }
   .sub { color: var(--muted); margin: 0; }
-  .controls { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 18px 0 8px; }
-  select, input, textarea, button { font: inherit; color: inherit; }
-  select, .search { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
-  .search { flex: 1 1 200px; max-width: 320px; }
-  .btn { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; cursor: pointer; }
-  .btn.on, .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-  h2 { font: 600 22px "Cormorant Garamond", Georgia, serif; margin: 28px 0 8px; padding-bottom: 6px;
+  .toolbar { display: flex; gap: 8px; justify-content: flex-end; margin: 12px 0; }
+  .btn { background: var(--card); border: 1px solid var(--line); padding: 8px 14px; cursor: pointer; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .sunday { display: grid; grid-template-columns: 76px 1fr auto; gap: 16px; align-items: center; background: var(--card);
+            border: 1px solid var(--line); border-left: 3px solid var(--accent); padding: 14px 16px; margin: 8px 0;
+            cursor: pointer; text-decoration: none; color: inherit; }
+  .sunday:hover { border-color: var(--gold); border-left-color: var(--accent); }
+  .cal { text-align: center; border-right: 1px solid var(--line); padding-right: 14px; }
+  .cal .m { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+  .cal .d { font: 600 32px/1 "Cormorant Garamond", Georgia, serif; }
+  .cal .y { font-size: 12px; color: var(--muted); }
+  .s-title { font: 600 20px/1.2 "Cormorant Garamond", Georgia, serif; }
+  .s-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; font-size: 13px; color: var(--muted); align-items: center; }
+  .chev { color: var(--muted); font-size: 22px; }
+
+  /* sunday page */
+  .dayhead { position: sticky; top: env(safe-area-inset-top); z-index: 4; background: var(--bg); padding: 12px 0 10px;
+             border-bottom: 1px solid var(--line); display: flex; gap: 12px; align-items: center; }
+  .back { background: none; border: 1px solid var(--line); width: 40px; height: 40px; cursor: pointer; flex: none; font-size: 18px; }
+  .dayhead .t { flex: 1; min-width: 0; }
+  .dayhead .date { font: 600 24px/1.1 "Cormorant Garamond", Georgia, serif; }
+  .dayhead .kind { color: var(--muted); font-size: 13px; }
+  .search { width: 100%; background: var(--card); border: 1px solid var(--line); padding: 9px 10px; margin: 14px 0 0; }
+  .daynotes { background: var(--gold-soft); border-left: 3px solid var(--gold); padding: 10px 12px; margin: 12px 0 0; font-size: 14px; }
+  h2 { font: 600 21px "Cormorant Garamond", Georgia, serif; margin: 26px 0 8px; padding-bottom: 6px;
        border-bottom: 1px solid var(--line); color: var(--accent); }
   .clip { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line);
-          border-radius: 10px; padding: 10px 12px; margin: 6px 0; cursor: pointer; transition: border-color .15s; }
+          padding: 10px 12px; margin: 6px 0; cursor: pointer; }
   .clip:hover { border-color: var(--gold); }
   .clip.playing { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
-  .num { width: 26px; color: var(--muted); font-size: 13px; text-align: right; flex: none; font-variant-numeric: tabular-nums; }
-  .pbtn { width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--accent-soft); color: var(--accent);
+  .num { width: 24px; color: var(--muted); font-size: 13px; text-align: right; flex: none; font-variant-numeric: tabular-nums; }
+  .pbtn { width: 36px; height: 36px; border: 1px solid var(--line); background: var(--accent-soft); color: var(--accent);
           flex: none; display: grid; place-items: center; cursor: pointer; }
   .pbtn svg { width: 14px; height: 14px; }
   .body { flex: 1; min-width: 0; }
   .name { font-weight: 500; }
-  .meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 3px; font-size: 12px; color: var(--muted); align-items: center; }
-  .tag { border-radius: 99px; padding: 1px 8px; font-weight: 500; }
-  .tag.tone { background: var(--gold-soft); color: var(--gold); }
+  .meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 3px; font-size: 12px; }
+  .tag { padding: 1px 7px; font-weight: 500; font-size: 12px; border: 1px solid transparent; }
+  .tag.tone { background: var(--gold-soft); color: var(--gold); border-color: var(--gold); }
   .tag.var { background: var(--accent-soft); color: var(--accent); }
   .notes { font-size: 13px; color: var(--muted); margin-top: 3px; }
   .dur { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; flex: none; }
-  .edit-fields { display: grid; gap: 6px; margin-top: 6px; }
-  .edit-fields input, .edit-fields textarea, .edit-fields select { width: 100%; background: var(--bg); border: 1px solid var(--line);
-          border-radius: 6px; padding: 6px 8px; }
-  .edit-row { display: flex; gap: 6px; }
-  .edit-row select { width: 130px; flex: none; }
+  .clip.spoken .name { font-style: italic; color: var(--muted); }
+  .tag.spk { border-color: var(--line); color: var(--muted); }
+  .tag.draft { border-color: var(--accent); color: var(--accent); text-transform: uppercase; letter-spacing: .08em; font-size: 11px; }
+  .bounds { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: 12px; color: var(--muted); }
+  .bounds b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; min-width: 52px; display: inline-block; }
+  .bounds button { border: 1px solid var(--line); background: var(--card); padding: 3px 7px; font-size: 12px; cursor: pointer; }
+  .bounds .grp { display: flex; gap: 3px; align-items: center; margin-right: 10px; }
+  .foot { text-align: center; color: var(--muted); font-size: 13px; margin: 28px 0 0; }
+  .foot a { color: var(--accent); }
   .empty { text-align: center; color: var(--muted); padding: 40px 0; }
-  #editbar { position: sticky; top: env(safe-area-inset-top); z-index: 5; background: var(--gold-soft); border: 1px solid var(--gold);
-             border-radius: 10px; padding: 10px 12px; margin: 10px 0; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  /* edit */
+  #editbar { position: sticky; top: env(safe-area-inset-top); z-index: 6; background: var(--gold-soft); border: 1px solid var(--gold);
+             padding: 10px 12px; margin: 10px 0; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   #editbar span { flex: 1 1 200px; font-size: 13px; }
+  .ed { display: grid; gap: 6px; margin-top: 6px; }
+  .ed input, .ed textarea, .ed select { width: 100%; background: var(--bg); border: 1px solid var(--line); padding: 6px 8px; }
+  .ed .row2 { display: flex; gap: 6px; }
+  .ed .row2 select { width: 120px; flex: none; }
+  .ed label { font-size: 12px; color: var(--muted); }
+
   /* player */
   #player { position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
-            padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 18px rgba(0,0,0,.06); }
+            padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); z-index: 8; }
   #player .inner { max-width: 760px; margin: 0 auto; }
   #pname { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #pday { font-size: 12px; color: var(--muted); }
   .prog { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; margin: 4px 0; }
   .prog input { flex: 1; accent-color: var(--accent); }
   .row { display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
   .transport { display: flex; align-items: center; gap: 4px; }
-  .ic { background: none; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: grid; place-items: center; color: var(--ink); }
+  .ic { background: none; border: none; width: 40px; height: 40px; cursor: pointer; display: grid; place-items: center; color: var(--ink); }
   .ic svg { width: 20px; height: 20px; }
-  .ic.big { background: var(--accent); color: #fff; width: 48px; height: 48px; }
+  .ic.big { background: var(--accent); color: #fff; width: 46px; height: 46px; }
   .ic.on { color: var(--accent); background: var(--accent-soft); }
   .speed { display: flex; gap: 2px; }
-  .speed button { border: 1px solid var(--line); background: var(--card); border-radius: 6px; padding: 4px 7px; font-size: 12px; cursor: pointer; }
+  .speed button { border: 1px solid var(--line); background: var(--card); padding: 4px 7px; font-size: 12px; cursor: pointer; }
   .speed button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
   .toast { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg);
-           padding: 8px 14px; border-radius: 8px; font-size: 13px; z-index: 10; }
-  dialog { border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--ink); max-width: 440px; }
-  dialog input { width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); margin: 8px 0; }
+           padding: 8px 14px; font-size: 13px; z-index: 10; }
+  dialog { border: 1px solid var(--line); background: var(--card); color: var(--ink); max-width: 440px; }
+  dialog input { width: 100%; padding: 8px; border: 1px solid var(--line); background: var(--bg); margin: 8px 0; }
   dialog p { font-size: 13px; color: var(--muted); }
+  @media (max-width: 480px) { .sunday { grid-template-columns: 62px 1fr auto; gap: 12px; } .cal .d { font-size: 28px; } }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div class="cross">☩</div>
-    <h1 id="title">Divine Liturgy</h1>
-    <p class="sub" id="subtitle">Choir practice recordings</p>
-  </header>
-  <div class="controls">
-    <select id="rec" aria-label="Recording"></select>
-    <input class="search" id="q" type="search" placeholder="Find a part…">
-    <button class="btn" id="editBtn">Edit</button>
-  </div>
   <div id="editbar" hidden>
-    <span>Editing — change names, tones and notes below. Changes go live for everyone about a minute after saving.</span>
+    <span>Editing — changes go live for everyone about a minute after saving.</span>
     <button class="btn" id="cancelEdit">Cancel</button>
     <button class="btn primary" id="saveEdit">Save</button>
   </div>
-  <div id="list"></div>
+
+  <section id="home">
+    <header class="home">
+      <div class="cross">☩</div>
+      <h1 id="title">Divine Liturgy</h1>
+      <p class="sub" id="subtitle">Choir practice recordings</p>
+    </header>
+    <div class="toolbar"><button class="btn" id="editBtn">Edit</button></div>
+    <div id="sundays"></div>
+    <p class="foot"><a href="cleanup/">Compare audio cleanup levels</a></p>
+  </section>
+
+  <section id="day" hidden>
+    <div class="dayhead">
+      <button class="back" id="back" aria-label="All Sundays">←</button>
+      <div class="t"><div class="date" id="dDate"></div><div class="kind" id="dKind"></div></div>
+      <button class="btn" id="editBtn2">Edit</button>
+    </div>
+    <div id="dEdit"></div>
+    <div class="daynotes" id="dNotes" hidden></div>
+    <input class="search" id="q" type="search" placeholder="Find a part…">
+    <div id="list"></div>
+  </section>
 </div>
 
 <div id="player">
   <div class="inner">
     <div id="pname">Tap any part to play</div>
+    <div id="pday"></div>
     <div class="prog"><span id="cur">0:00</span><input id="seek" type="range" min="0" max="1000" value="0" aria-label="Seek"><span id="len">0:00</span></div>
     <div class="row">
       <div class="transport">
         <button class="ic" id="prev" aria-label="Previous part"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
-        <button class="ic" id="back" aria-label="Back 5 seconds"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+        <button class="ic" id="backs" aria-label="Back 5 seconds"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
         <button class="ic big" id="pp" aria-label="Play or pause"><svg viewBox="0 0 24 24" fill="currentColor" id="ppicon"><path d="M8 5v14l11-7z"/></svg></button>
         <button class="ic" id="next" aria-label="Next part"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
         <button class="ic" id="loop" aria-label="Loop this part" title="Loop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg></button>
@@ -136,84 +185,180 @@ const REPO = { owner: "kstasiulewicz", name: "liturgy-choir", branch: "main", pa
 const $ = id => document.getElementById(id);
 const audio = $("audio");
 const store = { get: k => { try { return localStorage.getItem(k); } catch { return null; } },
-                set: (k, v) => { try { localStorage.setItem(k, v); } catch {} } };
-let data, rec, editing = false, draft = null, visible = [], current = null, loop = false;
+                set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
+                del: k => { try { localStorage.removeItem(k); } catch {} } };
+let data, editing = false, draft = null, visible = [], current = null, loop = false;
+const src = () => editing ? draft : data;
 
+const fmtP = s => Math.floor(s / 60) + ":" + (s % 60).toFixed(2).padStart(5, "0");
 const fmt = s => isFinite(s) ? Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0") : "0:00";
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const toneOpts = sel => `<option value="">—</option>${[1,2,3,4,5,6,7,8].map(n => `<option ${String(sel) === String(n) ? "selected" : ""}>${n}</option>`).join("")}`;
 function toast(msg) { const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; document.body.append(t); setTimeout(() => t.remove(), 3500); }
+
+// Recording ids are ISO dates (YYYY-MM-DD); parse as local dates.
+const dateOf = r => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(r.date || r.id); return m ? new Date(+m[1], m[2] - 1, +m[3]) : null; };
+const longDate = r => { const d = dateOf(r); return d ? d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }) : r.id; };
+const kindLine = r => [r.tone ? "Tone " + r.tone : "", r.label].filter(Boolean).join(" · ");
+const clipsOf = id => src().clips.filter(c => c.recording === id);
+const recOf = id => src().recordings.find(r => r.id === id);
 
 async function load() {
   data = await (await fetch("clips.json?" + Date.now())).json();
   $("title").textContent = data.title || "Divine Liturgy";
   $("subtitle").textContent = data.subtitle || "Choir practice recordings";
-  document.title = data.title || "Liturgy Practice";
-  const recs = data.recordings || [];
-  $("rec").innerHTML = recs.map(r => `<option value="${esc(r.id)}">${esc(r.label)}${r.tone ? " · Tone " + esc(r.tone) : ""}</option>`).join("");
-  $("rec").hidden = recs.length < 2;
-  rec = store.get("rec") && recs.some(r => r.id === store.get("rec")) ? store.get("rec") : recs[recs.length - 1]?.id;
-  $("rec").value = rec;
-  render();
+  route();
 }
 
-function render() {
-  const src = editing ? draft : data;
+// ---- routing: #/ = list of Sundays, #/YYYY-MM-DD = one Sunday ----
+function route() {
+  const id = decodeURIComponent(location.hash.replace(/^#\/?/, ""));
+  const r = id && recOf(id);
+  $("home").hidden = !!r; $("day").hidden = !r;
+  if (r) renderDay(r); else renderHome();
+  window.scrollTo(0, 0);
+}
+addEventListener("hashchange", route);
+
+function renderHome() {
+  document.title = data.title || "Liturgy Practice";
+  const recs = [...src().recordings].sort((a, b) => (b.date || b.id).localeCompare(a.date || a.id));
+  if (!recs.length) { $("sundays").innerHTML = `<div class="empty">Recordings coming soon.</div>`; return; }
+  $("sundays").innerHTML = recs.map(r => {
+    const d = dateOf(r), cs = clipsOf(r.id), total = cs.reduce((s, c) => s + (c.end - c.start), 0);
+    const cal = d ? `<div class="m">${d.toLocaleDateString("en-US", { month: "short" })}</div><div class="d">${d.getDate()}</div><div class="y">${d.getFullYear()}</div>` : "";
+    const ed = editing ? `<div class="ed" onclick="event.stopPropagation()">
+        <div class="row2"><input data-r="${esc(r.id)}" data-k="label" value="${esc(r.label)}" placeholder="Liturgy type (e.g. 13th Sunday after Pentecost)">
+        <select data-r="${esc(r.id)}" data-k="tone" aria-label="Tone">${toneOpts(r.tone)}</select></div>
+        <textarea data-r="${esc(r.id)}" data-k="notes" rows="2" placeholder="Notes for this Sunday">${esc(r.notes)}</textarea></div>` : "";
+    return `<a class="sunday" href="#/${encodeURIComponent(r.id)}">
+      <div class="cal">${cal}</div>
+      <div><div class="s-title">${esc(r.label || (d ? d.toLocaleDateString("en-US", { weekday: "long" }) + " Divine Liturgy" : r.id))}</div>
+        <div class="s-meta">${r.draft ? `<span class="tag draft">Draft</span>` : ""}${r.tone ? `<span class="tag tone">Tone ${esc(r.tone)}</span>` : ""}<span>${cs.length} parts · ${Math.round(total / 60)} min</span></div>${ed}</div>
+      <span class="chev">›</span></a>`;
+  }).join("");
+}
+
+function renderDay(r) {
+  document.title = longDate(r) + " — " + (data.title || "Liturgy Practice");
+  $("dDate").textContent = longDate(r);
+  $("dKind").textContent = [kindLine(r) || "Divine Liturgy", r.draft ? "Draft — part boundaries still being reviewed" : ""].filter(Boolean).join(" · ");
+  $("dEdit").innerHTML = editing ? `<div class="ed"><label>This Sunday</label>
+      <div class="row2"><input data-r="${esc(r.id)}" data-k="label" value="${esc(r.label)}" placeholder="Liturgy type (e.g. 13th Sunday after Pentecost)">
+      <select data-r="${esc(r.id)}" data-k="tone" aria-label="Tone">${toneOpts(r.tone)}</select></div>
+      <textarea data-r="${esc(r.id)}" data-k="notes" rows="2" placeholder="Notes for this Sunday">${esc(r.notes)}</textarea>
+      <label><input type="checkbox" data-r="${esc(r.id)}" data-k="draft" ${r.draft ? "checked" : ""} style="width:auto"> Draft (boundaries still being reviewed)</label></div>` : "";
+  $("dNotes").hidden = editing || !r.notes; $("dNotes").textContent = r.notes || "";
   const q = $("q").value.trim().toLowerCase();
-  visible = src.clips.filter(c => c.recording === rec && (!q || (c.name + " " + c.notes + " " + c.group).toLowerCase().includes(q)));
-  if (!visible.length) { $("list").innerHTML = `<div class="empty">${src.clips.length ? "No parts match." : "Recordings coming soon."}</div>`; return; }
+  visible = clipsOf(r.id).filter(c => !q || (c.name + " " + c.notes + " " + c.group).toLowerCase().includes(q));
+  if (!visible.length) { $("list").innerHTML = `<div class="empty">No parts match.</div>`; return; }
   let html = "", group = null;
   visible.forEach((c, i) => {
     if (c.group !== group) { group = c.group; html += `<h2>${esc(group)}</h2>`; }
     const tone = c.tone ? `<span class="tag tone">Tone ${esc(c.tone)}</span>` : "";
-    const v = c.variable ? `<span class="tag var" title="Changes with the Sunday tone or feast">Changes weekly</span>` : "";
-    const fields = editing ? `<div class="edit-fields" onclick="event.stopPropagation()">
-        <div class="edit-row"><input data-i="${i}" data-k="name" value="${esc(c.name)}" aria-label="Name">
-        <select data-i="${i}" data-k="tone" aria-label="Tone"><option value="">No tone</option>${[1,2,3,4,5,6,7,8].map(n => `<option ${String(c.tone) === String(n) ? "selected" : ""}>${n}</option>`).join("")}</select></div>
-        <textarea data-i="${i}" data-k="notes" rows="2" placeholder="Notes for the choir (who leads, tricky spots…)">${esc(c.notes)}</textarea></div>`
-      : `${c.notes ? `<div class="notes">${esc(c.notes)}</div>` : ""}`;
-    html += `<div class="clip ${current?.id === c.id ? "playing" : ""}" data-i="${i}">
+    const v = (c.variable ? `<span class="tag var" title="Changes with the Sunday tone or feast">Changes weekly</span>` : "")
+            + (c.spoken ? `<span class="tag spk">Spoken</span>` : "");
+    const dur = c.end - c.start;
+    const body = editing ? `<div class="ed" onclick="event.stopPropagation()">
+        <div class="row2"><input data-i="${i}" data-k="name" value="${esc(c.name)}" aria-label="Name">
+        <select data-i="${i}" data-k="tone" aria-label="Tone">${toneOpts(c.tone)}</select></div>
+        <textarea data-i="${i}" data-k="notes" rows="2" placeholder="Notes for the choir (who leads, tricky spots…)">${esc(c.notes)}</textarea>
+        <div class="bounds">${["start", "end"].map(k => `<span class="grp">${k === "start" ? "Starts" : "Ends"} <b>${fmtP(c[k])}</b>
+          <button data-b="${i}:${k}:-1">−1s</button><button data-b="${i}:${k}:-0.25">−¼</button><button data-b="${i}:${k}:0.25">+¼</button><button data-b="${i}:${k}:1">+1s</button>
+          <button data-h="${i}:${k}">▶ hear</button></span>`).join("")}</div></div>`
+      : `<div class="name">${esc(c.name)}</div>${tone || v ? `<div class="meta">${tone}${v}</div>` : ""}${c.notes ? `<div class="notes">${esc(c.notes)}</div>` : ""}`;
+    html += `<div class="clip ${current?.id === c.id ? "playing" : ""} ${c.spoken ? "spoken" : ""}" data-i="${i}">
       <span class="num">${i + 1}</span>
       <button class="pbtn" aria-label="Play ${esc(c.name)}"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
-      <div class="body"><div class="name">${editing ? "" : esc(c.name)}</div>
-        ${editing ? "" : `<div class="meta">${tone}${v}</div>`}${fields}</div>
-      <span class="dur">${fmt(c.duration)}</span></div>`;
+      <div class="body">${body}</div>
+      <span class="dur">${fmt(dur)}</span></div>`;
   });
   $("list").innerHTML = html;
 }
+const rerender = () => route.call(null);
 
-$("list").addEventListener("click", e => { const el = e.target.closest(".clip"); if (el) playClip(+el.dataset.i); });
-$("list").addEventListener("input", e => { const t = e.target; if (t.dataset.k) visible[+t.dataset.i][t.dataset.k] = t.value || (t.dataset.k === "tone" ? null : ""); });
-$("q").addEventListener("input", render);
-$("rec").addEventListener("change", e => { rec = e.target.value; store.set("rec", rec); render(); });
+$("list").addEventListener("click", e => {
+  const b = e.target.closest("button[data-b],button[data-h]");
+  if (b) {
+    e.stopPropagation();
+    if (b.dataset.b) {
+      const [i, k, d] = b.dataset.b.split(":"); const c = visible[+i];
+      c[k] = Math.max(0, Math.round((c[k] + +d) * 100) / 100);
+      if (c.end <= c.start + 1) c[k] = Math.round((c[k] - +d) * 100) / 100;
+      renderDay(recOf(c.recording)); hear(c, k);
+    } else { const [i, k] = b.dataset.h.split(":"); hear(visible[+i], k); }
+    return;
+  }
+  const el = e.target.closest(".clip"); if (el && !e.target.closest(".ed")) playClip(+el.dataset.i);
+});
+// Preview an edge: the first 4 s after a start, or the last 4 s before an end.
+function hear(c, k) {
+  const a = k === "start" ? c.start : Math.max(c.start, c.end - 4);
+  playRange(c, a, k === "start" ? Math.min(c.end, c.start + 4) : c.end);
+}
+document.addEventListener("input", e => {
+  const t = e.target, k = t.dataset.k; if (!k || !editing) return;
+  const val = t.type === "checkbox" ? t.checked : (t.value || (k === "tone" ? null : ""));
+  if (t.dataset.r) recOf(t.dataset.r)[k] = val; else if (t.dataset.i) visible[+t.dataset.i][k] = val;
+});
+$("q").addEventListener("input", () => renderDay(recOf(decodeURIComponent(location.hash.replace(/^#\/?/, "")))));
+$("back").onclick = () => { location.hash = "#/"; };
 
-// ---- player ----
+// ---- player: each part is a time range inside its Sunday's single audio file ----
+let stopAt = null;
+const fileOf = c => (recOf(c.recording) || data.recordings.find(r => r.id === c.recording)).file;
+function playRange(c, from, to) {
+  const url = new URL(fileOf(c), location.href).href;
+  if (audio.src !== url) audio.src = url;
+  audio.playbackRate = +document.querySelector("#speed .on").dataset.r; audio.preservesPitch = true;
+  stopAt = to;
+  const go = () => { audio.currentTime = from; audio.play(); };
+  audio.readyState >= 1 ? go() : audio.addEventListener("loadedmetadata", go, { once: true });
+}
 function playClip(i) {
   const c = visible[i]; if (!c) return;
-  if (current?.id === c.id) { audio.paused ? audio.play() : audio.pause(); return; }
-  current = c; audio.src = c.file; audio.playbackRate = +document.querySelector("#speed .on").dataset.r;
-  audio.preservesPitch = true; audio.play();
+  if (current?.id === c.id && stopAt !== null) { audio.paused ? audio.play() : audio.pause(); return; }
+  current = c; playRange(c, c.start, c.end);
   $("pname").textContent = c.name + (c.tone ? " · Tone " + c.tone : "");
+  const r = data.recordings.find(x => x.id === c.recording); $("pday").textContent = r ? longDate(r) : "";
   document.querySelectorAll(".clip").forEach(el => el.classList.toggle("playing", visible[+el.dataset.i]?.id === c.id));
 }
-const step = d => { const i = visible.findIndex(c => c.id === current?.id); playClip(Math.max(0, Math.min(visible.length - 1, i + d))); };
-$("pp").onclick = () => current ? (audio.paused ? audio.play() : audio.pause()) : playClip(0);
-$("prev").onclick = () => audio.currentTime > 3 ? (audio.currentTime = 0) : step(-1);
+const step = d => { const i = visible.findIndex(c => c.id === current?.id); if (i >= 0) { const n = Math.max(0, Math.min(visible.length - 1, i + d)); if (n !== i) playClip(n); } };
+$("pp").onclick = () => {
+  if (!current) return visible.length && !$("day").hidden ? playClip(0) : null;
+  if (!audio.paused) return audio.pause();
+  if (stopAt === null || audio.currentTime >= current.end) { playRange(current, current.start, current.end); } else audio.play();
+};
+$("prev").onclick = () => current && audio.currentTime - current.start > 3 ? (audio.currentTime = current.start) : step(-1);
 $("next").onclick = () => step(1);
-$("back").onclick = () => audio.currentTime = Math.max(0, audio.currentTime - 5);
+$("backs").onclick = () => audio.currentTime = Math.max(current ? current.start : 0, audio.currentTime - 5);
 $("loop").onclick = () => { loop = !loop; $("loop").classList.toggle("on", loop); };
 $("speed").onclick = e => { const b = e.target.closest("button"); if (!b) return;
   document.querySelectorAll("#speed button").forEach(x => x.classList.toggle("on", x === b)); audio.playbackRate = +b.dataset.r; };
 audio.onplay = audio.onpause = () => $("ppicon").innerHTML = audio.paused ? '<path d="M8 5v14l11-7z"/>' : '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
-audio.ontimeupdate = () => { $("cur").textContent = fmt(audio.currentTime); $("len").textContent = fmt(audio.duration);
-  if (audio.duration) $("seek").value = audio.currentTime / audio.duration * 1000; };
-$("seek").oninput = e => { if (audio.duration) audio.currentTime = e.target.value / 1000 * audio.duration; };
-audio.onended = () => loop ? (audio.currentTime = 0, audio.play()) : null;
+// timeupdate fires only ~4x/s; check every frame while playing so parts stop on time
+(function tick() {
+  if (!audio.paused && stopAt !== null && audio.currentTime >= stopAt) {
+    if (loop && current && stopAt === current.end) audio.currentTime = current.start; else { audio.pause(); stopAt = null; }
+  }
+  if (current) {
+    const t = audio.currentTime - current.start, len = current.end - current.start;
+    $("cur").textContent = fmt(Math.max(0, t)); $("len").textContent = fmt(len);
+    if (document.activeElement !== $("seek")) $("seek").value = Math.max(0, Math.min(1000, t / len * 1000));
+  }
+  requestAnimationFrame(tick);
+})();
+$("seek").oninput = e => { if (current) { audio.currentTime = current.start + e.target.value / 1000 * (current.end - current.start); stopAt = current.end; } };
 document.addEventListener("keydown", e => { if (e.target.matches("input,textarea,select")) return;
-  if (e.code === "Space") { e.preventDefault(); $("pp").click(); } if (e.key === "ArrowLeft") $("back").click(); });
+  if (e.code === "Space") { e.preventDefault(); $("pp").click(); } if (e.key === "ArrowLeft") $("backs").click(); });
 
 // ---- editing (commits clips.json through the GitHub API) ----
-$("editBtn").onclick = () => { editing = true; draft = JSON.parse(JSON.stringify(data)); $("editbar").hidden = false; $("editBtn").hidden = true; render(); };
-$("cancelEdit").onclick = () => { editing = false; $("editbar").hidden = true; $("editBtn").hidden = false; render(); };
+function setEditing(on) {
+  editing = on; draft = on ? JSON.parse(JSON.stringify(data)) : null;
+  $("editbar").hidden = !on; $("editBtn").hidden = $("editBtn2").hidden = on; rerender();
+}
+$("editBtn").onclick = $("editBtn2").onclick = () => setEditing(true);
+$("cancelEdit").onclick = () => setEditing(false);
 function getToken() {
   const saved = store.get("ghToken"); if (saved) return Promise.resolve(saved);
   return new Promise(res => { const d = $("tokenDlg"); $("tokenIn").value = ""; d.showModal();
@@ -226,13 +371,13 @@ $("saveEdit").onclick = async () => {
   $("saveEdit").disabled = true;
   try {
     const cur = await fetch(url + "?ref=" + REPO.branch, { headers: h });
-    if (cur.status === 401 || cur.status === 403) { try { localStorage.removeItem("ghToken"); } catch {} throw new Error("That editor key didn't work."); }
+    if (cur.status === 401 || cur.status === 403) { store.del("ghToken"); throw new Error("That editor key didn't work."); }
     const { sha } = await cur.json();
     const body = new TextEncoder().encode(JSON.stringify(draft, null, 1) + "\n");
     const b64 = btoa(Array.from(body, b => String.fromCharCode(b)).join(""));
-    const r = await fetch(url, { method: "PUT", headers: h, body: JSON.stringify({ message: "Edit clip labels from site", content: b64, sha, branch: REPO.branch }) });
+    const r = await fetch(url, { method: "PUT", headers: h, body: JSON.stringify({ message: "Edit labels from site", content: b64, sha, branch: REPO.branch }) });
     if (!r.ok) throw new Error("GitHub refused the save (" + r.status + ").");
-    data = draft; $("cancelEdit").click(); toast("Saved — live for everyone in about a minute.");
+    data = draft; setEditing(false); toast("Saved — live for everyone in about a minute.");
   } catch (err) { toast(err.message); }
   $("saveEdit").disabled = false;
 };

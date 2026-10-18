@@ -38,24 +38,29 @@ D.excerpts.forEach((ex, n) => {
     <div class="prog"><i></i></div>`;
   const auds = Object.fromEntries(keys.map(k => { const a = new Audio(ex.files[k]); a.preload = 'auto'; a.muted = k !== keys[0]; return [k, a]; }));
   const st = { box, auds, sel: keys[0] };
-  const main = () => auds[keys[0]];
+  // The version being heard is the clock and is never seeked (seeking it is an audible skip);
+  // only the muted versions are nudged to follow it.
+  const main = () => auds[st.sel];
   const playBtn = box.querySelector('.play'), bar = box.querySelector('.prog i');
   function stopAll() { Object.values(auds).forEach(a => a.pause()); playBtn.textContent = '▶ Play'; }
   playBtn.onclick = () => {
     if (active && active !== st) active.stop();
     if (!main().paused) return stopAll();
-    const t = main().currentTime; Object.values(auds).forEach(a => { a.currentTime = t; a.play(); });
+    const t = main().currentTime; Object.values(auds).forEach(a => { if (a !== main()) a.currentTime = t; a.play(); });
     playBtn.textContent = '❚❚ Pause'; active = st;
   };
   st.stop = stopAll;
   st.select = k => { st.sel = k; keys.forEach(x => auds[x].muted = x !== k);
     box.querySelectorAll('.opts button').forEach(b => b.classList.toggle('on', b.dataset.k === k)); };
   box.querySelector('.opts').onclick = e => { const b = e.target.closest('button'); if (b) { st.select(b.dataset.k); active = st; } };
-  main().ontimeupdate = () => {
-    bar.style.width = (main().currentTime / main().duration * 100 || 0) + '%';
-    Object.values(auds).forEach(a => { if (a !== main() && Math.abs(a.currentTime - main().currentTime) > 0.12) a.currentTime = main().currentTime; });
-  };
-  main().onended = stopAll;
+  Object.values(auds).forEach(a => {
+    a.ontimeupdate = () => {
+      if (a !== main()) return;
+      bar.style.width = (a.currentTime / a.duration * 100 || 0) + '%';
+      Object.values(auds).forEach(o => { if (o !== a && o.muted && Math.abs(o.currentTime - a.currentTime) > 0.15) o.currentTime = a.currentTime; });
+    };
+    a.onended = () => { if (a === main()) stopAll(); };
+  });
   box.querySelector('.prog').onclick = e => { const r = e.currentTarget.getBoundingClientRect();
     const t = (e.clientX - r.left) / r.width * main().duration; Object.values(auds).forEach(a => a.currentTime = t); };
   list.appendChild(box);
